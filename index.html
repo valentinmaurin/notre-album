@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentin & Marilou | Nos Souvenirs</title>
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff85a1;
+            --bg: #fff5f7;
+            --text: #4a4a4a;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .memory-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .memory-info {
+            padding: 20px;
+        }
+
+        .memory-date {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .memory-desc {
+            margin-top: 10px;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        /* Bouton Flottant */
+        #upload-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 133, 161, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Valentin & Marilou</h1>
+        <div class="subtitle">Notre album de souvenirs éternels</div>
+    </header>
+
+    <div class="gallery" id="gallery">
+        </div>
+
+    <button id="upload-btn">+</button>
+
+    <script>
+        // CONFIGURATION (À REMPLIR)
+        const CLOUD_NAME = "ditbsvebr"; 
+        const UPLOAD_PRESET = "souvenirs_preset";
+        const TAG_NAME = "souvenirs_valentin_marilou";
+
+        const gallery = document.getElementById('gallery');
+        const uploadBtn = document.getElementById('upload-btn');
+
+        // 1. Fonction pour charger les photos
+        async function loadPhotos() {
+            // Note: Pour un site statique sans serveur, on utilise l'URL de liste de Cloudinary
+            // Attention: Il faut activer "Resource List" dans Cloudinary Settings > Security
+            const url = `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${TAG_NAME}.json`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                gallery.innerHTML = data.resources.map(img => `
+                    <div class="memory-card">
+                        <img src="https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_600/${img.public_id}.${img.format}" alt="Souvenir">
+                        <div class="memory-info">
+                            <div class="memory-date">${new Date(img.created_at).toLocaleDateString('fr-FR')}</div>
+                            <div class="memory-desc">${img.context?.custom?.caption || "Un beau moment partagé ❤️"}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.log("Aucune photo trouvée ou erreur de config.");
+            }
+        }
+
+        // 2. Widget de téléchargement
+        const myWidget = cloudinary.createUploadWidget({
+            cloudName: CLOUD_NAME, 
+            uploadPreset: UPLOAD_PRESET,
+            tags: [TAG_NAME],
+            context: {custom: {caption: "Souvenir de nous"}}, // On pourra améliorer ça plus tard
+            sources: ['local', 'camera', 'instagram'],
+            styles: {
+                palette: {
+                    window: "#FFFFFF",
+                    sourceBg: "#FFF5F7",
+                    windowBorder: "#FF85A1",
+                    tabIcon: "#FF85A1",
+                    inactiveTabIcon: "#4A4A4A",
+                    menuIcons: "#FF85A1",
+                    link: "#FF85A1",
+                    action: "#FF85A1",
+                    inProgress: "#FF85A1",
+                    complete: "#20B832",
+                    error: "#E44949",
+                    textDark: "#4A4A4A",
+                    textLight: "#FFFFFF"
+                }
+            }
+        }, (error, result) => { 
+            if (!error && result && result.event === "success") { 
+                location.reload(); // Recharge la page pour voir la nouvelle photo
+            }
+        });
+
+        uploadBtn.addEventListener('click', () => myWidget.open(), false);
+
+        // Charger au démarrage
+        loadPhotos();
+    </script>
+</body>
+</html>
