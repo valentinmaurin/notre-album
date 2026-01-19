@@ -5,29 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Valentin & Marilou | Album</title>
     <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #ff85a1; --bg: #fff5f7; --text: #4a4a4a; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; scroll-behavior: smooth; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 140px; scroll-behavior: smooth; }
         #lock-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 85%; max-width: 320px; }
         #main-content { display: none; }
         header { text-align: center; padding: 30px 20px; background: white; border-bottom: 1px solid #ffe0e6; }
         h1 { font-family: 'Dancing Script', cursive; font-size: 2.8rem; color: var(--primary); margin: 0; }
+        
         .nav-wrapper { position: sticky; top: 0; background: white; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .anchor-nav { display: flex; gap: 10px; overflow-x: auto; padding: 12px; white-space: nowrap; -webkit-overflow-scrolling: touch; }
         .anchor-link { background: var(--bg); color: var(--primary); padding: 8px 18px; border-radius: 20px; text-decoration: none; font-size: 0.8rem; font-weight: 600; border: 1px solid #ffe0e6; }
+        
         .section-title { font-family: 'Dancing Script', cursive; color: var(--primary); font-size: 2.2rem; margin: 30px 20px 15px 20px; padding-bottom: 5px; border-bottom: 2px solid #ffe0e6; }
         .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 8px; padding: 0 20px; }
-        .photo-item { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; box-sizing: border-box; }
-        .photo-item.selected { border-color: var(--primary); opacity: 0.6; transform: scale(0.9); }
-        .select-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #fff; }
+        .photo-item { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        
         #upload-btn { position: fixed; bottom: 30px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 30px; box-shadow: 0 5px 15px rgba(255,133,161,0.4); z-index: 500; }
-        #multi-del-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: 600; box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4); display: none; z-index: 600; }
-        #lightbox { display: none; position: fixed; inset: 0; background: black; z-index: 10000; align-items: center; justify-content: center; }
+        .manage-link { position: fixed; bottom: 30px; left: 20px; background: white; color: var(--primary); padding: 10px 15px; border-radius: 20px; text-decoration: none; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--primary); z-index: 500; }
+
+        #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; align-items: center; justify-content: center; touch-action: none; }
         #lightbox img { max-width: 100%; max-height: 90%; object-fit: contain; }
-        .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; border: none; padding: 20px 15px; font-size: 30px; cursor: pointer; }
+        .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); color: white; border: none; padding: 25px 15px; font-size: 35px; cursor: pointer; z-index: 10001; }
+        
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: 600; margin-top: 15px; }
         input { padding: 12px; border: 2px solid #eee; border-radius: 10px; width: 90%; outline: none; }
     </style>
@@ -45,36 +47,30 @@
 <div id="main-content">
     <header><h1>Valentin & Marilou</h1></header>
     <div class="nav-wrapper"><div class="anchor-nav" id="anchor-nav"></div></div>
-    <div class="select-bar">
-        <span id="photo-count" style="font-size: 0.8rem; opacity: 0.6;">Chargement...</span>
-        <button style="background:none; border:1px solid var(--primary); color:var(--primary); border-radius:15px; padding:4px 12px; font-size:0.75rem;" onclick="toggleSelectMode()" id="toggle-btn">Sélectionner</button>
-    </div>
+    
     <div id="full-gallery"></div>
+
+    <a href="https://console.cloudinary.com/console/c-668573934301548e647900b953d441/media_library/folders/home" target="_blank" class="manage-link">⚙️ Gérer l'album</a>
     <button id="upload-btn" onclick="startUpload()">+</button>
-    <button id="multi-del-btn" onclick="deleteSelected()">Supprimer (0)</button>
 </div>
 
 <div id="lightbox">
-    <button style="position:absolute;top:20px;right:20px;color:white;background:none;border:none;font-size:40px;z-index:10001;" onclick="closeLightbox()">×</button>
-    <button class="lightbox-nav" style="left:0;" onclick="changePhoto(-1)">‹</button>
-    <img id="lightbox-img" src="">
-    <button class="lightbox-nav" style="right:0;" onclick="changePhoto(1)">›</button>
+    <button style="position:absolute;top:20px;right:20px;color:white;background:none;border:none;font-size:45px;z-index:10002;" onclick="closeLightbox()">×</button>
+    <button class="nav-arrow" style="left:0;" onclick="changePhoto(-1); event.stopPropagation();">‹</button>
+    <img id="lightbox-img" src="" onclick="event.stopPropagation()">
+    <button class="nav-arrow" style="right:0;" onclick="changePhoto(1); event.stopPropagation();">›</button>
 </div>
 
 <script>
     const CONFIG = {
         CLOUD_NAME: "ditbsvebr",
         UPLOAD_PRESET: "souvenirs_preset",
-        API_KEY: "274456693674898",
-        API_SECRET: "68eaHGHtTmP1_4SN8bjpM4QU90p8",
         TAG_ROOT: "souvenirs_valentin_marilou",
         PASSWORD: "19.Juin.2025"
     };
 
     let allPhotos = [];
-    let selectedIds = new Set();
-    let isSelectMode = false;
-    let currentPhotoIndex = 0;
+    let currentIndex = 0;
 
     if (localStorage.getItem('isLogged') === 'true') unlock();
 
@@ -99,15 +95,11 @@
             
             const grouped = {};
             allPhotos.forEach(img => {
-                let event = "Nos Souvenirs";
-                if (img.context?.custom?.caption && img.context.custom.caption !== "[object Object]") {
-                    event = img.context.custom.caption;
-                }
+                let event = (img.context?.custom?.caption && img.context.custom.caption !== "[object Object]") ? img.context.custom.caption : "Nos Souvenirs";
                 if (!grouped[event]) grouped[event] = [];
                 grouped[event].push(img);
             });
 
-            document.getElementById('photo-count').innerText = `${allPhotos.length} souvenirs partagés`;
             renderNav(grouped);
             renderGallery(grouped);
         } catch (err) { console.error("Erreur de chargement"); }
@@ -125,94 +117,52 @@
                 <div class="section-title">${event}</div>
                 <div class="photo-grid">
                     ${grouped[event].map(img => `
-                        <img class="photo-item ${selectedIds.has(img.public_id) ? 'selected' : ''}" 
-                             src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/w_400,c_fill,g_auto/${img.public_id}.${img.format}" 
-                             onclick="handlePhotoClick('${img.public_id}')">
+                        <img class="photo-item" src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/w_400,c_fill,g_auto/${img.public_id}.${img.format}" onclick="openLightbox('${img.public_id}')">
                     `).join('')}
                 </div>
             </div>
         `).join('');
     }
 
-    function handlePhotoClick(pid) {
-        if (isSelectMode) {
-            if (selectedIds.has(pid)) selectedIds.delete(pid);
-            else selectedIds.add(pid);
-            updateUI();
-        } else {
-            currentPhotoIndex = allPhotos.findIndex(p => p.public_id === pid);
-            updateLightboxImage();
-            document.getElementById('lightbox').style.display = 'flex';
-        }
+    function openLightbox(pid) {
+        currentIndex = allPhotos.findIndex(p => p.public_id === pid);
+        updateLightbox();
+        document.getElementById('lightbox').style.display = 'flex';
     }
 
-    function changePhoto(dir) {
-        currentPhotoIndex += dir;
-        if (currentPhotoIndex < 0) currentPhotoIndex = allPhotos.length - 1;
-        if (currentPhotoIndex >= allPhotos.length) currentPhotoIndex = 0;
-        updateLightboxImage();
-    }
-
-    function updateLightboxImage() {
-        const img = allPhotos[currentPhotoIndex];
+    function updateLightbox() {
+        const img = allPhotos[currentIndex];
         document.getElementById('lightbox-img').src = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto/${img.public_id}.${img.format}`;
     }
 
-    function toggleSelectMode() {
-        isSelectMode = !isSelectMode;
-        if (!isSelectMode) selectedIds.clear();
-        document.getElementById('toggle-btn').innerText = isSelectMode ? "Annuler" : "Sélectionner";
-        updateUI();
+    function changePhoto(dir) {
+        currentIndex = (currentIndex + dir + allPhotos.length) % allPhotos.length;
+        updateLightbox();
     }
 
-    function updateUI() {
-        document.querySelectorAll('.photo-item').forEach(el => {
-            const pid = el.onclick.toString().match(/'(.*?)'/)[1];
-            el.classList.toggle('selected', selectedIds.has(pid));
-        });
-        const delBtn = document.getElementById('multi-del-btn');
-        delBtn.style.display = selectedIds.size > 0 ? 'block' : 'none';
-        delBtn.innerText = `Supprimer (${selectedIds.size})`;
-    }
+    function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
 
-    async function deleteSelected() {
-        if (!confirm(`Effacer définitivement ces ${selectedIds.size} souvenirs ?`)) return;
-        
-        const btn = document.getElementById('multi-del-btn');
-        btn.disabled = true;
-        btn.innerText = "Suppression en cours...";
-
-        for (const id of selectedIds) {
-            const ts = Math.round(new Date().getTime() / 1000);
-            const signatureString = `public_id=${id}&timestamp=${ts}${CONFIG.API_SECRET}`;
-            const sig = CryptoJS.SHA1(signatureString).toString();
-            
-            const fd = new FormData();
-            fd.append("public_id", id);
-            fd.append("timestamp", ts);
-            fd.append("api_key", CONFIG.API_KEY);
-            fd.append("signature", sig);
-
-            try {
-                await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.CLOUD_NAME}/image/destroy`, { method: "POST", body: fd });
-            } catch (err) { console.error("Erreur de suppression pour", id); }
-        }
-        
-        alert("Les souvenirs sélectionnés ont été retirés !");
-        location.reload();
-    }
+    // Swipe Mobile
+    let startX = 0;
+    const lightbox = document.getElementById('lightbox');
+    lightbox.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+    lightbox.addEventListener('touchend', e => {
+        const endX = e.changedTouches[0].clientX;
+        if (startX - endX > 50) changePhoto(1);
+        if (endX - startX > 50) changePhoto(-1);
+    });
 
     function startUpload() {
-        const name = prompt("Nom de l'événement ?", "Nos Souvenirs");
+        const name = prompt("Nom de l'événement ?", "Sortie");
         if (!name) return;
         cloudinary.openUploadWidget({
             cloudName: CONFIG.CLOUD_NAME, uploadPreset: CONFIG.UPLOAD_PRESET,
             tags: [CONFIG.TAG_ROOT], context: { caption: name.trim() },
-            sources: ['local', 'camera'], multiple: true, language: "fr"
+            sources: ['local', 'camera'], multiple: true, 
+            clientAllowedFormats: ["png","jpg","jpeg","heic"],
+            language: "fr"
         }, (error, result) => { if (!error && result.event === "success") loadPhotos(); });
     }
-
-    function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
 </script>
 </body>
 </html>
