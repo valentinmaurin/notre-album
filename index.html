@@ -19,6 +19,50 @@
             color: var(--text);
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Système de Verrouillage */
+        #lock-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        input[type="password"] {
+            padding: 10px;
+            border: 2px solid var(--bg);
+            border-radius: 10px;
+            margin: 10px 0;
+            outline: none;
+        }
+
+        .btn-login {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Contenu principal (caché au début) */
+        #main-content {
+            display: none;
         }
 
         header {
@@ -30,16 +74,9 @@
 
         h1 {
             font-family: 'Dancing Script', cursive;
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: var(--primary);
             margin: 0;
-        }
-
-        .subtitle {
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            opacity: 0.7;
         }
 
         .gallery {
@@ -56,135 +93,112 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-        }
-
-        .memory-card:hover {
-            transform: translateY(-5px);
         }
 
         .memory-card img {
             width: 100%;
-            height: 250px;
+            height: 300px;
             object-fit: cover;
         }
 
-        .memory-info {
-            padding: 20px;
-        }
+        .memory-info { padding: 20px; }
+        .memory-date { color: var(--primary); font-weight: 600; font-size: 0.8rem; }
 
-        .memory-date {
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .memory-desc {
-            margin-top: 10px;
-            font-size: 1rem;
-            line-height: 1.4;
-        }
-
-        /* Bouton Flottant */
         #upload-btn {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 30px; right: 30px;
             background: var(--primary);
-            color: white;
-            border: none;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            font-size: 30px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 133, 161, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: white; border: none;
+            width: 60px; height: 60px;
+            border-radius: 50%; font-size: 30px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(255,133,161,0.4);
             z-index: 1000;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Valentin & Marilou</h1>
-        <div class="subtitle">Notre album de souvenirs éternels</div>
-    </header>
-
-    <div class="gallery" id="gallery">
+    <div id="lock-screen">
+        <div class="login-box">
+            <h2 style="font-family: 'Dancing Script'; color: var(--primary);">Coucou vous deux !</h2>
+            <p>Entrez votre mot de passe magique :</p>
+            <input type="password" id="pass-input" placeholder="Mot de passe...">
+            <br>
+            <button class="btn-login" onclick="checkPassword()">Entrer</button>
         </div>
+    </div>
 
-    <button id="upload-btn">+</button>
+    <div id="main-content">
+        <header>
+            <h1>Valentin & Marilou</h1>
+            <p>Notre album de souvenirs éternels ✨</p>
+        </header>
+
+        <div class="gallery" id="gallery"></div>
+        <button id="upload-btn">+</button>
+    </div>
 
     <script>
-        // CONFIGURATION (À REMPLIR)
-        const CLOUD_NAME = "ditbsvebr"; 
-        const UPLOAD_PRESET = "souvenirs_preset";
-        const TAG_NAME = "souvenirs_valentin_marilou";
+        // CONFIGURATION
+        const CONFIG = {
+            CLOUD_NAME: "ditbsvebr",
+            UPLOAD_PRESET: "souvenirs_preset", // Vérifie bien ce nom dans Cloudinary !
+            TAG_NAME: "souvenirs_valentin_marilou",
+            PASSWORD: "19.Juin.2024" // <--- CHANGE LE MOT DE PASSE ICI
+        };
 
-        const gallery = document.getElementById('gallery');
-        const uploadBtn = document.getElementById('upload-btn');
+        // GESTION DU MOT DE PASSE
+        function checkPassword() {
+            const input = document.getElementById('pass-input').value;
+            if (input === CONFIG.PASSWORD) {
+                document.getElementById('lock-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('lock-screen').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
+                    loadPhotos();
+                }, 500);
+            } else {
+                alert("Oups, ce n'est pas le bon mot de passe !");
+            }
+        }
 
-        // 1. Fonction pour charger les photos
+        // CHARGEMENT DES PHOTOS
         async function loadPhotos() {
-            // Note: Pour un site statique sans serveur, on utilise l'URL de liste de Cloudinary
-            // Attention: Il faut activer "Resource List" dans Cloudinary Settings > Security
-            const url = `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${TAG_NAME}.json`;
-            
+            const url = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/list/${CONFIG.TAG_NAME}.json`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
+                const gallery = document.getElementById('gallery');
                 
                 gallery.innerHTML = data.resources.map(img => `
                     <div class="memory-card">
-                        <img src="https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_600/${img.public_id}.${img.format}" alt="Souvenir">
+                        <img src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/${img.public_id}.${img.format}">
                         <div class="memory-info">
-                            <div class="memory-date">${new Date(img.created_at).toLocaleDateString('fr-FR')}</div>
-                            <div class="memory-desc">${img.context?.custom?.caption || "Un beau moment partagé ❤️"}</div>
+                            <div class="memory-date">Le ${new Date(img.created_at).toLocaleDateString('fr-FR')}</div>
+                            <div class="memory-desc">Un merveilleux souvenir ❤️</div>
                         </div>
                     </div>
                 `).join('');
             } catch (err) {
-                console.log("Aucune photo trouvée ou erreur de config.");
+                console.log("En attente de vos premières photos...");
             }
         }
 
-        // 2. Widget de téléchargement
+        // WIDGET CLOUDINARY
         const myWidget = cloudinary.createUploadWidget({
-            cloudName: CLOUD_NAME, 
-            uploadPreset: UPLOAD_PRESET,
-            tags: [TAG_NAME],
-            context: {custom: {caption: "Souvenir de nous"}}, // On pourra améliorer ça plus tard
-            sources: ['local', 'camera', 'instagram'],
-            styles: {
-                palette: {
-                    window: "#FFFFFF",
-                    sourceBg: "#FFF5F7",
-                    windowBorder: "#FF85A1",
-                    tabIcon: "#FF85A1",
-                    inactiveTabIcon: "#4A4A4A",
-                    menuIcons: "#FF85A1",
-                    link: "#FF85A1",
-                    action: "#FF85A1",
-                    inProgress: "#FF85A1",
-                    complete: "#20B832",
-                    error: "#E44949",
-                    textDark: "#4A4A4A",
-                    textLight: "#FFFFFF"
-                }
-            }
-        }, (error, result) => { 
-            if (!error && result && result.event === "success") { 
-                location.reload(); // Recharge la page pour voir la nouvelle photo
+            cloudName: CONFIG.CLOUD_NAME,
+            uploadPreset: CONFIG.UPLOAD_PRESET,
+            tags: [CONFIG.TAG_NAME],
+            sources: ['local', 'camera'],
+            language: "fr",
+            text: { fr: { menu: { files: "Mes Photos" }, local: { browse: "Choisir", dd_area_title: "Dépose ta photo ici" } } }
+        }, (error, result) => {
+            if (!error && result && result.event === "success") {
+                location.reload();
             }
         });
 
-        uploadBtn.addEventListener('click', () => myWidget.open(), false);
-
-        // Charger au démarrage
-        loadPhotos();
+        document.getElementById('upload-btn').addEventListener('click', () => myWidget.open());
     </script>
 </body>
 </html>
