@@ -27,6 +27,7 @@
         #multi-del-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: 600; box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4); display: none; z-index: 600; }
         #lightbox { display: none; position: fixed; inset: 0; background: black; z-index: 10000; align-items: center; justify-content: center; }
         #lightbox img { max-width: 100%; max-height: 90%; object-fit: contain; }
+        .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; border: none; padding: 20px 15px; font-size: 30px; cursor: pointer; }
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: 600; margin-top: 15px; }
         input { padding: 12px; border: 2px solid #eee; border-radius: 10px; width: 90%; outline: none; }
     </style>
@@ -53,7 +54,12 @@
     <button id="multi-del-btn" onclick="deleteSelected()">Supprimer (0)</button>
 </div>
 
-<div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src=""></div>
+<div id="lightbox">
+    <button style="position:absolute;top:20px;right:20px;color:white;background:none;border:none;font-size:40px;z-index:10001;" onclick="closeLightbox()">×</button>
+    <button class="lightbox-nav" style="left:0;" onclick="changePhoto(-1)">‹</button>
+    <img id="lightbox-img" src="">
+    <button class="lightbox-nav" style="right:0;" onclick="changePhoto(1)">›</button>
+</div>
 
 <script>
     const CONFIG = {
@@ -68,6 +74,7 @@
     let allPhotos = [];
     let selectedIds = new Set();
     let isSelectMode = false;
+    let currentPhotoIndex = 0;
 
     if (localStorage.getItem('isLogged') === 'true') unlock();
 
@@ -120,22 +127,35 @@
                     ${grouped[event].map(img => `
                         <img class="photo-item ${selectedIds.has(img.public_id) ? 'selected' : ''}" 
                              src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/w_400,c_fill,g_auto/${img.public_id}.${img.format}" 
-                             onclick="handlePhotoClick('${img.public_id}', '${img.format}')">
+                             onclick="handlePhotoClick('${img.public_id}')">
                     `).join('')}
                 </div>
             </div>
         `).join('');
     }
 
-    function handlePhotoClick(pid, fmt) {
+    function handlePhotoClick(pid) {
         if (isSelectMode) {
             if (selectedIds.has(pid)) selectedIds.delete(pid);
             else selectedIds.add(pid);
             updateUI();
         } else {
-            document.getElementById('lightbox-img').src = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto/${pid}.${fmt}`;
+            currentPhotoIndex = allPhotos.findIndex(p => p.public_id === pid);
+            updateLightboxImage();
             document.getElementById('lightbox').style.display = 'flex';
         }
+    }
+
+    function changePhoto(dir) {
+        currentPhotoIndex += dir;
+        if (currentPhotoIndex < 0) currentPhotoIndex = allPhotos.length - 1;
+        if (currentPhotoIndex >= allPhotos.length) currentPhotoIndex = 0;
+        updateLightboxImage();
+    }
+
+    function updateLightboxImage() {
+        const img = allPhotos[currentPhotoIndex];
+        document.getElementById('lightbox-img').src = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto/${img.public_id}.${img.format}`;
     }
 
     function toggleSelectMode() {
@@ -159,7 +179,6 @@
         if (!confirm(`Effacer définitivement ces ${selectedIds.size} souvenirs ?`)) return;
         
         const btn = document.getElementById('multi-del-btn');
-        const originalText = btn.innerText;
         btn.disabled = true;
         btn.innerText = "Suppression en cours...";
 
