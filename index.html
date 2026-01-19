@@ -192,11 +192,11 @@
         async function deleteCurrentPhoto() {
             if (!confirm("Vraiment supprimer cette photo ?")) return;
             
-            // Le piège a été retiré ici !
-            if (CONFIG.API_SECRET.includes("COLLE_TON_VRAI_API_SECRET")) {
-                alert("Oups ! Tu as oublié de mettre ton API Secret tout en haut du code !");
-                return;
-            }
+            // Ne mets PAS ton vrai secret ici, laisse le texte générique
+if (CONFIG.API_SECRET === "COLLE_TON_VRAI_API_SECRET_ICI") {
+    alert("Oups ! Tu as oublié de configurer ton secret en haut !");
+    return;
+}
 
             const imgData = allMemories[currentFolder][currentPhotoIndex];
             const timestamp = Math.round(new Date().getTime() / 1000);
