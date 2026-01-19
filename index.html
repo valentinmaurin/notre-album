@@ -9,25 +9,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #ff85a1; --bg: #fff5f7; --text: #4a4a4a; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+        
         #lock-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 300px; }
-        #main-content { display: none; padding: 20px; }
-        header { text-align: center; padding: 20px 0; }
-        h1 { font-family: 'Dancing Script', cursive; font-size: 2.8rem; color: var(--primary); margin: 0; }
-        .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
-        .folder { background: white; padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .folder-icon { font-size: 40px; display: block; margin-bottom: 5px; }
-        #gallery-view { display: none; }
-        .back-btn { background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; margin-bottom: 20px; }
-        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-        .photo-item { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; cursor: pointer; }
+        
+        #main-content { display: none; }
+        header { text-align: center; padding: 30px 20px; background: white; }
+        h1 { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--primary); margin: 0; }
+
+        /* Navigation par ancres */
+        .anchor-nav { 
+            position: sticky; top: 0; background: white; padding: 10px; 
+            display: flex; gap: 10px; overflow-x: auto; white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; border-bottom: 1px solid #eee;
+        }
+        .anchor-link { 
+            background: var(--bg); color: var(--primary); padding: 6px 15px; 
+            border-radius: 20px; text-decoration: none; font-size: 0.85rem; font-weight: 600; 
+        }
+
+        .event-section { padding: 20px; }
+        .event-title { font-family: 'Dancing Script', cursive; color: var(--primary); font-size: 2rem; margin: 20px 0 10px 0; border-bottom: 2px solid #ffe0e6; display: inline-block; }
+
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+        .photo-item { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; }
+        .photo-item.selected { border-color: var(--primary); opacity: 0.7; transform: scale(0.9); }
+
+        /* Contrôles */
+        .top-controls { padding: 10px 20px; display: flex; justify-content: flex-end; }
+        .select-btn { background: none; border: 1.5px solid var(--primary); color: var(--primary); padding: 5px 15px; border-radius: 20px; font-weight: 600; cursor: pointer; }
+
+        #multi-del-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: 600; box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4); display: none; z-index: 600; }
+        #upload-btn { position: fixed; bottom: 30px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 30px; box-shadow: 0 5px 15px rgba(255,133,161,0.4); z-index: 500; }
+
         #lightbox { display: none; position: fixed; inset: 0; background: black; z-index: 10000; align-items: center; justify-content: center; }
         #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; border: none; padding: 20px 10px; font-size: 24px; cursor: pointer; }
-        .del-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: none; border: none; color: #ff4757; cursor: pointer; padding: 15px; }
-        #upload-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 30px; box-shadow: 0 5px 15px rgba(255,133,161,0.4); z-index: 500; }
-        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; margin: 10px 0; width: 90%; outline: none; }
+        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; margin: 10px 0; width: 90%; }
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: 600; }
     </style>
 </head>
@@ -43,21 +61,21 @@
 
     <div id="main-content">
         <header><h1>Valentin & Marilou</h1></header>
-        <div id="folder-view"><div class="folder-grid" id="folder-container"></div></div>
-        <div id="gallery-view">
-            <button class="back-btn" onclick="showFolders()">← Retour</button>
-            <h2 id="current-folder-title" style="font-family: 'Dancing Script'; color: var(--primary); margin-top:0"></h2>
-            <div class="photo-grid" id="photo-container"></div>
+        
+        <div class="anchor-nav" id="anchor-nav"></div>
+
+        <div class="top-controls">
+            <button class="select-btn" id="select-toggle" onclick="toggleSelectionMode()">Sélectionner</button>
         </div>
-        <button id="upload-btn">+</button>
+
+        <div id="full-gallery"></div>
+
+        <button id="upload-btn" onclick="startUpload()">+</button>
+        <button id="multi-del-btn" onclick="deleteSelected()">Supprimer (0)</button>
     </div>
 
-    <div id="lightbox">
-        <button style="position:absolute;top:20px;right:20px;color:white;background:none;border:none;font-size:30px;" onclick="closeLightbox()">×</button>
-        <button class="nav-btn" style="left:10px;" onclick="changePhoto(-1)">‹</button>
+    <div id="lightbox" onclick="closeLightbox()">
         <img id="lightbox-img" src="">
-        <button class="nav-btn" style="right:10px;" onclick="changePhoto(1)">›</button>
-        <button class="del-btn" onclick="deleteCurrentPhoto()">🗑️</button>
     </div>
 
     <script>
@@ -70,16 +88,19 @@
             PASSWORD: "19.Juin.2025"
         };
 
-        let allMemories = {};
-        let currentFolder = "";
-        let currentPhotoIndex = 0;
+        let allPhotos = [];
+        let groupedPhotos = {};
+        let selectedIds = new Set();
+        let isSelectMode = false;
 
         if (localStorage.getItem('isLogged') === 'true') unlock();
+
         function checkPassword() {
             if (document.getElementById('pass-input').value === CONFIG.PASSWORD) {
                 localStorage.setItem('isLogged', 'true'); unlock();
             } else alert("Oups ! ❤️");
         }
+
         function unlock() {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
@@ -91,92 +112,95 @@
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                allMemories = {};
+                allPhotos = data.resources;
                 
-                data.resources.forEach(img => {
-                    let folderName = "Nos Souvenirs";
-                    if (img.context && img.context.custom && img.context.custom.caption) {
-                        const cap = img.context.custom.caption;
-                        if (typeof cap === 'string' && cap !== "[object Object]") {
-                            folderName = cap;
-                        }
-                    }
-                    if (!allMemories[folderName]) allMemories[folderName] = [];
-                    allMemories[folderName].push(img);
+                groupedPhotos = {};
+                allPhotos.forEach(img => {
+                    const event = img.context?.custom?.caption || "Nos Souvenirs";
+                    if (!groupedPhotos[event]) groupedPhotos[event] = [];
+                    groupedPhotos[event].push(img);
                 });
-                renderFolders();
-            } catch (err) { console.log("Prêt !"); }
+
+                renderNavigation();
+                renderGallery();
+            } catch (err) { console.log("Prêt pour les photos !"); }
         }
 
-        function renderFolders() {
-            const container = document.getElementById('folder-container');
-            const keys = Object.keys(allMemories).sort();
-            container.innerHTML = keys.length ? keys.map(name => `
-                <div class="folder" onclick="showGallery('${name}')">
-                    <span class="folder-icon">📂</span>
-                    <span style="font-weight:600;font-size:0.85rem;color:var(--primary);">${name}</span><br>
-                    <small style="opacity:0.5">${allMemories[name].length} photos</small>
+        function renderNavigation() {
+            const nav = document.getElementById('anchor-nav');
+            const events = Object.keys(groupedPhotos).sort();
+            nav.innerHTML = events.map(e => `<a href="#${e.replace(/\s+/g, '-')}" class="anchor-link">${e}</a>`).join('');
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('full-gallery');
+            const events = Object.keys(groupedPhotos).sort();
+            
+            container.innerHTML = events.map(event => `
+                <div class="event-section" id="${event.replace(/\s+/g, '-')}">
+                    <div class="event-title">${event}</div>
+                    <div class="photo-grid">
+                        ${groupedPhotos[event].map(img => `
+                            <img class="photo-item ${selectedIds.has(img.public_id) ? 'selected' : ''}" 
+                                 src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/w_300,c_fill,g_auto/${img.public_id}.${img.format}" 
+                                 onclick="handlePhotoClick('${img.public_id}', '${img.format}')">
+                        `).join('')}
+                    </div>
                 </div>
-            `).join('') : '<p style="text-align:center;width:100%">L\'album est vide. Cliquez sur + pour ajouter des photos !</p>';
-        }
-
-        function showGallery(name) {
-            currentFolder = name;
-            document.getElementById('folder-view').style.display = 'none';
-            document.getElementById('gallery-view').style.display = 'block';
-            document.getElementById('current-folder-title').innerText = name;
-            const container = document.getElementById('photo-container');
-            container.innerHTML = allMemories[name].map((img, index) => `
-                <img class="photo-item" src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/w_300,c_fill,g_auto/${img.public_id}.${img.format}" onclick="openLightbox(${index})">
             `).join('');
         }
 
-        function showFolders() {
-            document.getElementById('folder-view').style.display = 'block';
-            document.getElementById('gallery-view').style.display = 'none';
+        function handlePhotoClick(publicId, format) {
+            if (isSelectMode) {
+                if (selectedIds.has(publicId)) selectedIds.delete(publicId);
+                else selectedIds.add(publicId);
+                updateUI();
+                renderGallery();
+            } else {
+                const img = document.getElementById('lightbox-img');
+                img.src = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto/${publicId}.${format}`;
+                document.getElementById('lightbox').style.display = 'flex';
+            }
         }
 
-        function openLightbox(index) {
-            currentPhotoIndex = index; updateLightboxPhoto();
-            document.getElementById('lightbox').style.display = 'flex';
-        }
-        function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
-        function updateLightboxPhoto() {
-            const img = allMemories[currentFolder][currentPhotoIndex];
-            document.getElementById('lightbox-img').src = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto/${img.public_id}.${img.format}`;
-        }
-        function changePhoto(dir) {
-            currentPhotoIndex += dir;
-            if (currentPhotoIndex < 0) currentPhotoIndex = allMemories[currentFolder].length - 1;
-            if (currentPhotoIndex >= allMemories[currentFolder].length) currentPhotoIndex = 0;
-            updateLightboxPhoto();
+        function toggleSelectionMode() {
+            isSelectMode = !isSelectMode;
+            if (!isSelectMode) selectedIds.clear();
+            document.getElementById('select-toggle').innerText = isSelectMode ? "Annuler" : "Sélectionner";
+            updateUI();
+            renderGallery();
         }
 
-        async function deleteCurrentPhoto() {
-            if (!confirm("Supprimer ce souvenir ?")) return;
-            const img = allMemories[currentFolder][currentPhotoIndex];
-            const ts = Math.round(new Date().getTime() / 1000);
-            const sig = CryptoJS.SHA1(`public_id=${img.public_id}&timestamp=${ts}${CONFIG.API_SECRET}`).toString();
-            const fd = new FormData();
-            fd.append("public_id", img.public_id); fd.append("timestamp", ts);
-            fd.append("api_key", CONFIG.API_KEY); fd.append("signature", sig);
-            try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.CLOUD_NAME}/image/destroy`, { method: "POST", body: fd });
-                if (res.ok) location.reload();
-            } catch (err) { alert("Erreur."); }
+        function updateUI() {
+            const delBtn = document.getElementById('multi-del-btn');
+            delBtn.style.display = selectedIds.size > 0 ? 'block' : 'none';
+            delBtn.innerText = `Supprimer (${selectedIds.size})`;
         }
 
-        document.getElementById('upload-btn').onclick = () => {
+        async function deleteSelected() {
+            if (!confirm(`Supprimer ces ${selectedIds.size} photos ?`)) return;
+            for (const id of selectedIds) {
+                const ts = Math.round(new Date().getTime() / 1000);
+                const sig = CryptoJS.SHA1(`public_id=${id}&timestamp=${ts}${CONFIG.API_SECRET}`).toString();
+                const fd = new FormData();
+                fd.append("public_id", id); fd.append("timestamp", ts);
+                fd.append("api_key", CONFIG.API_KEY); fd.append("signature", sig);
+                await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.CLOUD_NAME}/image/destroy`, { method: "POST", body: fd });
+            }
+            location.reload();
+        }
+
+        function startUpload() {
             const name = prompt("Nom de l'événement ?", "Sortie");
-            if (name === null) return;
-            const finalName = name.trim() || "Général";
+            if (!name) return;
             cloudinary.openUploadWidget({
                 cloudName: CONFIG.CLOUD_NAME, uploadPreset: CONFIG.UPLOAD_PRESET,
-                tags: [CONFIG.TAG_ROOT],
-                context: { caption: finalName },
+                tags: [CONFIG.TAG_ROOT], context: { custom: { caption: name.trim() } },
                 sources: ['local', 'camera'], multiple: true, language: "fr"
             }, (error, result) => { if (!error && result.event === "success") loadPhotos(); });
-        };
+        }
+
+        function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
     </script>
 </body>
 </html>
