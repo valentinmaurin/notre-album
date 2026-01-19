@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #ff85a1; --bg: #fff5f7; --text: #4a4a4a; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
         #lock-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 300px; }
         #main-content { display: none; padding: 20px; }
@@ -24,27 +24,25 @@
         .photo-item { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; cursor: pointer; }
         #lightbox { display: none; position: fixed; inset: 0; background: black; z-index: 10000; align-items: center; justify-content: center; }
         #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; border: none; padding: 20px 10px; font-size: 24px; }
-        .del-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: none; border: none; color: #ff4757; padding: 15px; }
-        #upload-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 30px; z-index: 500; }
-        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; margin: 10px 0; width: 90%; }
+        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; border: none; padding: 20px 10px; font-size: 24px; cursor: pointer; }
+        .del-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: none; border: none; color: #ff4757; cursor: pointer; padding: 15px; }
+        #upload-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 30px; box-shadow: 0 5px 15px rgba(255,133,161,0.4); z-index: 500; }
+        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; margin: 10px 0; width: 90%; outline: none; }
         .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: 600; }
-        #error-msg { color: #ff4757; text-align: center; margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
         <div class="login-box">
-            <h2 style="font-family: 'Dancing Script'; color: var(--primary);">Notre Album</h2>
+            <h2 style="font-family: 'Dancing Script'; color: var(--primary);">Coucou !</h2>
             <input type="password" id="pass-input" placeholder="Mot de passe...">
-            <button class="btn" onclick="checkPassword()">Ouvrir</button>
+            <button class="btn" onclick="checkPassword()">Ouvrir l'album</button>
         </div>
     </div>
 
     <div id="main-content">
         <header><h1>Valentin & Marilou</h1></header>
-        <div id="error-msg"></div>
         <div id="folder-view"><div class="folder-grid" id="folder-container"></div></div>
         <div id="gallery-view">
             <button class="back-btn" onclick="showFolders()">← Retour</button>
@@ -77,14 +75,11 @@
         let currentPhotoIndex = 0;
 
         if (localStorage.getItem('isLogged') === 'true') unlock();
-
         function checkPassword() {
             if (document.getElementById('pass-input').value === CONFIG.PASSWORD) {
-                localStorage.setItem('isLogged', 'true');
-                unlock();
+                localStorage.setItem('isLogged', 'true'); unlock();
             } else alert("Oups ! ❤️");
         }
-
         function unlock() {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
@@ -92,29 +87,25 @@
         }
 
         async function loadPhotos() {
-            const errorDiv = document.getElementById('error-msg');
             const url = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/list/${CONFIG.TAG_ROOT}.json?v=${new Date().getTime()}`;
-            
             try {
                 const response = await fetch(url);
-                if (!response.ok) {
-                    errorDiv.style.display = 'block';
-                    errorDiv.innerHTML = "⚠️ Cloudinary bloque l'accès. Vérifie que 'Resource list' est décoché dans tes réglages Security.";
-                    return;
-                }
                 const data = await response.json();
                 allMemories = {};
+                
                 data.resources.forEach(img => {
-                    const evTag = img.tags.find(t => t.startsWith('ev_')) || "ev_Général";
-                    const folderName = evTag.replace('ev_', '').replace(/_/g, ' ');
+                    let folderName = "Nos Souvenirs";
+                    if (img.context && img.context.custom && img.context.custom.caption) {
+                        const cap = img.context.custom.caption;
+                        if (typeof cap === 'string' && cap !== "[object Object]") {
+                            folderName = cap;
+                        }
+                    }
                     if (!allMemories[folderName]) allMemories[folderName] = [];
                     allMemories[folderName].push(img);
                 });
                 renderFolders();
-            } catch (err) {
-                errorDiv.style.display = 'block';
-                errorDiv.innerHTML = "⚠️ Erreur de connexion. Vérifie tes photos sur Cloudinary.";
-            }
+            } catch (err) { console.log("Prêt !"); }
         }
 
         function renderFolders() {
@@ -126,7 +117,7 @@
                     <span style="font-weight:600;font-size:0.85rem;color:var(--primary);">${name}</span><br>
                     <small style="opacity:0.5">${allMemories[name].length} photos</small>
                 </div>
-            `).join('') : '<p style="text-align:center;width:100%">Cliquez sur + pour envoyer votre première photo !</p>';
+            `).join('') : '<p style="text-align:center;width:100%">L\'album est vide. Cliquez sur + pour ajouter des photos !</p>';
         }
 
         function showGallery(name) {
@@ -146,18 +137,14 @@
         }
 
         function openLightbox(index) {
-            currentPhotoIndex = index;
-            updateLightboxPhoto();
+            currentPhotoIndex = index; updateLightboxPhoto();
             document.getElementById('lightbox').style.display = 'flex';
         }
-
         function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
-
         function updateLightboxPhoto() {
-            const imgData = allMemories[currentFolder][currentPhotoIndex];
-            document.getElementById('lightbox-img').src = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto/${imgData.public_id}.${imgData.format}`;
+            const img = allMemories[currentFolder][currentPhotoIndex];
+            document.getElementById('lightbox-img').src = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto/${img.public_id}.${img.format}`;
         }
-
         function changePhoto(dir) {
             currentPhotoIndex += dir;
             if (currentPhotoIndex < 0) currentPhotoIndex = allMemories[currentFolder].length - 1;
@@ -166,33 +153,28 @@
         }
 
         async function deleteCurrentPhoto() {
-            if (!confirm("Voulez-vous vraiment supprimer ce souvenir ?")) return;
-            const imgData = allMemories[currentFolder][currentPhotoIndex];
-            const timestamp = Math.round(new Date().getTime() / 1000);
-            const signature = CryptoJS.SHA1(`public_id=${imgData.public_id}&timestamp=${timestamp}${CONFIG.API_SECRET}`).toString();
-            const formData = new FormData();
-            formData.append("public_id", imgData.public_id);
-            formData.append("timestamp", timestamp);
-            formData.append("api_key", CONFIG.API_KEY);
-            formData.append("signature", signature);
-
+            if (!confirm("Supprimer ce souvenir ?")) return;
+            const img = allMemories[currentFolder][currentPhotoIndex];
+            const ts = Math.round(new Date().getTime() / 1000);
+            const sig = CryptoJS.SHA1(`public_id=${img.public_id}&timestamp=${ts}${CONFIG.API_SECRET}`).toString();
+            const fd = new FormData();
+            fd.append("public_id", img.public_id); fd.append("timestamp", ts);
+            fd.append("api_key", CONFIG.API_KEY); fd.append("signature", sig);
             try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.CLOUD_NAME}/image/destroy`, { method: "POST", body: formData });
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.CLOUD_NAME}/image/destroy`, { method: "POST", body: fd });
                 if (res.ok) location.reload();
-            } catch (err) { alert("Erreur de suppression."); }
+            } catch (err) { alert("Erreur."); }
         }
 
         document.getElementById('upload-btn').onclick = () => {
-            const name = prompt("Nom de l'événement ?", "Général");
+            const name = prompt("Nom de l'événement ?", "Sortie");
             if (name === null) return;
-            const tagEvent = "ev_" + (name.trim() || "Général").replace(/\s+/g, '_');
+            const finalName = name.trim() || "Général";
             cloudinary.openUploadWidget({
-                cloudName: CONFIG.CLOUD_NAME,
-                uploadPreset: CONFIG.UPLOAD_PRESET,
-                tags: [CONFIG.TAG_ROOT, tagEvent],
-                sources: ['local', 'camera'],
-                multiple: true,
-                language: "fr"
+                cloudName: CONFIG.CLOUD_NAME, uploadPreset: CONFIG.UPLOAD_PRESET,
+                tags: [CONFIG.TAG_ROOT],
+                context: { caption: finalName },
+                sources: ['local', 'camera'], multiple: true, language: "fr"
             }, (error, result) => { if (!error && result.event === "success") loadPhotos(); });
         };
     </script>
