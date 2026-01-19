@@ -7,191 +7,146 @@
     <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #ff85a1;
-            --bg: #fff5f7;
-            --text: #4a4a4a;
-        }
+        :root { --primary: #ff85a1; --bg: #fff5f7; --text: #4a4a4a; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
+        /* Écran de verrouillage */
+        #lock-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; margin: 10px 0; width: 80%; outline: none; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; }
 
-        /* Système de Verrouillage */
-        #lock-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
+        /* Interface principale */
+        #main-content { display: none; }
+        header { text-align: center; padding: 40px 20px; background: white; }
+        h1 { font-family: 'Dancing Script', cursive; font-size: 3.5rem; color: var(--primary); margin: 0; }
 
-        .login-box {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
+        /* Barre de recherche et filtres */
+        .controls { max-width: 800px; margin: 20px auto; padding: 0 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-bar { flex: 2; min-width: 250px; }
+        .filter-select { flex: 1; min-width: 150px; padding: 12px; border-radius: 10px; border: 2px solid white; background: white; }
 
-        input[type="password"] {
-            padding: 10px;
-            border: 2px solid var(--bg);
-            border-radius: 10px;
-            margin: 10px 0;
-            outline: none;
-        }
+        /* Galerie */
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .memory-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .memory-card:hover { transform: translateY(-5px); }
+        .memory-card img { width: 100%; height: 280px; object-fit: cover; }
+        .memory-info { padding: 15px; }
+        .tag-event { background: #ffe0e6; color: var(--primary); padding: 4px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: 600; display: inline-block; margin-bottom: 8px; }
+        .memory-date { font-size: 0.8rem; opacity: 0.6; }
 
-        .btn-login {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* Contenu principal (caché au début) */
-        #main-content {
-            display: none;
-        }
-
-        header {
-            text-align: center;
-            padding: 50px 20px;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        h1 {
-            font-family: 'Dancing Script', cursive;
-            font-size: 3.5rem;
-            color: var(--primary);
-            margin: 0;
-        }
-
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            padding: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .memory-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-        }
-
-        .memory-card img {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-        }
-
-        .memory-info { padding: 20px; }
-        .memory-date { color: var(--primary); font-weight: 600; font-size: 0.8rem; }
-
-        #upload-btn {
-            position: fixed;
-            bottom: 30px; right: 30px;
-            background: var(--primary);
-            color: white; border: none;
-            width: 60px; height: 60px;
-            border-radius: 50%; font-size: 30px;
-            cursor: pointer; box-shadow: 0 5px 15px rgba(255,133,161,0.4);
-            z-index: 1000;
-        }
+        #upload-btn { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 30px; cursor: pointer; box-shadow: 0 5px 20px rgba(255,133,161,0.5); z-index: 100; }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
         <div class="login-box">
-            <h2 style="font-family: 'Dancing Script'; color: var(--primary);">Coucou vous deux !</h2>
-            <p>Entrez votre mot de passe magique :</p>
-            <input type="password" id="pass-input" placeholder="Mot de passe...">
+            <h2 style="font-family: 'Dancing Script'; color: var(--primary); font-size: 2.5rem;">Coucou Valentin & Marilou</h2>
+            <input type="password" id="pass-input" placeholder="Mot de passe magique...">
             <br>
-            <button class="btn-login" onclick="checkPassword()">Entrer</button>
+            <button class="btn" onclick="checkPassword()">Ouvrir l'album</button>
         </div>
     </div>
 
     <div id="main-content">
         <header>
-            <h1>Valentin & Marilou</h1>
-            <p>Notre album de souvenirs éternels ✨</p>
+            <h1>Nos Souvenirs</h1>
+            <p>Chaque photo est une page de notre histoire ✨</p>
         </header>
+
+        <div class="controls">
+            <input type="text" id="search-input" class="search-bar" placeholder="Rechercher un événement (ex: Parc, Resto...)" oninput="filterMemories()">
+            <select id="event-filter" class="filter-select" onchange="filterMemories()">
+                <option value="">Tous les événements</option>
+            </select>
+        </div>
 
         <div class="gallery" id="gallery"></div>
         <button id="upload-btn">+</button>
     </div>
 
     <script>
-        // CONFIGURATION
         const CONFIG = {
             CLOUD_NAME: "ditbsvebr",
-            UPLOAD_PRESET: "souvenirs_preset", // Vérifie bien ce nom dans Cloudinary !
+            UPLOAD_PRESET: "souvenirs_preset",
             TAG_NAME: "souvenirs_valentin_marilou",
-            PASSWORD: "19.Juin.2024" // <--- CHANGE LE MOT DE PASSE ICI
+            PASSWORD: "19.Juin.2025" // <--- METS TON MOT DE PASSE ICI
         };
 
-        // GESTION DU MOT DE PASSE
+        let allMemories = [];
+
         function checkPassword() {
-            const input = document.getElementById('pass-input').value;
-            if (input === CONFIG.PASSWORD) {
-                document.getElementById('lock-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('lock-screen').style.display = 'none';
-                    document.getElementById('main-content').style.display = 'block';
-                    loadPhotos();
-                }, 500);
-            } else {
-                alert("Oups, ce n'est pas le bon mot de passe !");
-            }
+            if (document.getElementById('pass-input').value === CONFIG.PASSWORD) {
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                loadPhotos();
+            } else { alert("Mot de passe incorrect ❤️"); }
         }
 
-        // CHARGEMENT DES PHOTOS
         async function loadPhotos() {
             const url = `https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/list/${CONFIG.TAG_NAME}.json`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                const gallery = document.getElementById('gallery');
+                allMemories = data.resources;
                 
-                gallery.innerHTML = data.resources.map(img => `
-                    <div class="memory-card">
-                        <img src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/${img.public_id}.${img.format}">
-                        <div class="memory-info">
-                            <div class="memory-date">Le ${new Date(img.created_at).toLocaleDateString('fr-FR')}</div>
-                            <div class="memory-desc">Un merveilleux souvenir ❤️</div>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (err) {
-                console.log("En attente de vos premières photos...");
-            }
+                // Extraire les événements uniques pour le filtre
+                updateFilterOptions();
+                renderGallery(allMemories);
+            } catch (err) { console.log("Prêt pour votre première photo !"); }
         }
 
-        // WIDGET CLOUDINARY
+        function updateFilterOptions() {
+            const select = document.getElementById('event-filter');
+            const events = [...new Set(allMemories.map(m => m.context?.custom?.caption).filter(Boolean))];
+            events.forEach(event => {
+                const opt = document.createElement('option');
+                opt.value = event;
+                opt.textContent = event;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderGallery(memories) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = memories.map(img => `
+                <div class="memory-card">
+                    <img src="https://res.cloudinary.com/${CONFIG.CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/${img.public_id}.${img.format}">
+                    <div class="memory-info">
+                        <span class="tag-event">${img.context?.custom?.caption || "Souvenir"}</span>
+                        <div class="memory-date">Le ${new Date(img.created_at).toLocaleDateString('fr-FR')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMemories() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filterValue = document.getElementById('event-filter').value;
+
+            const filtered = allMemories.filter(m => {
+                const caption = (m.context?.custom?.caption || "").toLowerCase();
+                const matchesSearch = caption.includes(searchTerm);
+                const matchesFilter = filterValue === "" || caption === filterValue.toLowerCase();
+                return matchesSearch && matchesFilter;
+            });
+            renderGallery(filtered);
+        }
+
         const myWidget = cloudinary.createUploadWidget({
             cloudName: CONFIG.CLOUD_NAME,
             uploadPreset: CONFIG.UPLOAD_PRESET,
             tags: [CONFIG.TAG_NAME],
+            // ICI: On active la possibilité de mettre un titre/événement
+            showAdvancedOptions: true,
             sources: ['local', 'camera'],
             language: "fr",
-            text: { fr: { menu: { files: "Mes Photos" }, local: { browse: "Choisir", dd_area_title: "Dépose ta photo ici" } } }
+            text: { fr: { 
+                menu: { files: "Mes Photos" }, 
+                local: { browse: "Choisir", dd_area_title: "Dépose ta photo" },
+                queue: { title_upload_with_success: "Photo envoyée ! Cliquez sur 'Done' pour voir le site." }
+            }}
         }, (error, result) => {
             if (!error && result && result.event === "success") {
                 location.reload();
